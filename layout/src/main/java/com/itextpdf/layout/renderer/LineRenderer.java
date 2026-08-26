@@ -643,7 +643,8 @@ public class LineRenderer extends AbstractRenderer {
                 if (!forceOverflowForTextRendererPartialResult) {
                     if (isVerticalWriting) {
                         float maxLineWidth = Math.max(occupiedArea.getBBox().getWidth(),
-                                childResult.getOccupiedArea().getBBox().getWidth());
+                                childResult.getStatus() ==
+                                        LayoutResult.NOTHING ? 0 : childResult.getOccupiedArea().getBBox().getWidth());
                         // Html/css and browsers also use line height as line width for vertical text.
                         float lineHeight = maxAscent - maxDescent;
                         occupiedArea.setBBox(new Rectangle(layoutBox.getX(),

@@ -609,6 +609,11 @@ public class CommonCssConstants {
     public static final String HARD_LIGHT = "hard-light";
 
     /**
+     * The Constant HORIZONTAL_TB.
+     */
+    public static final String HORIZONTAL_TB = "horizontal-tb";
+
+    /**
      * The Constant HUE.
      */
     public static final String HUE = "hue";
@@ -900,6 +905,16 @@ public class CommonCssConstants {
      * The Constant UNICODE_BIDI.
      */
     public static final String UNICODE_BIDI = "unicode-bidi";
+
+    /**
+     * The Constant UPRIGHT.
+     */
+    public static final String UPRIGHT = "upright";
+
+    /**
+     * The Constant VERTICAL_LR.
+     */
+    public static final String VERTICAL_LR = "vertical-lr";
 
     /**
      * The Constant VISIBILITY.

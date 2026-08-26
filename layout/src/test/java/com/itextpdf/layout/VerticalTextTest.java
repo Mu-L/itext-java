@@ -480,6 +480,7 @@ public class VerticalTextTest extends ExtendedITextTest {
     }
 
     @Test
+    // TODO fix underline positioning
     public void underlineTest() throws IOException, InterruptedException {
         String outFileName = DESTINATION_FOLDER + "underline.pdf";
         String cmpFileName = SOURCE_FOLDER + "cmp_underline.pdf";
@@ -494,7 +495,8 @@ public class VerticalTextTest extends ExtendedITextTest {
                     .setDashPattern(new float[]{5, 5, 10, 5}, 5);
             Paragraph p = new Paragraph("Yellow text with pink stroked dashed underline.")
                     .setFontSize(45).setFontColor(ColorConstants.YELLOW)
-                    .setUnderline(underline);
+                    .setUnderline(underline)
+                    .setBorder(new SolidBorder(ColorConstants.RED, 1));
 
             TransparentColor strokeColor = new TransparentColor(ColorConstants.GREEN, 0.5f);
             Underline underline2 = new Underline(ColorConstants.DARK_GRAY, 0, 0.1f, 0, 0.3f,
@@ -502,17 +504,21 @@ public class VerticalTextTest extends ExtendedITextTest {
             Paragraph p2 = new Paragraph("Text with line-through and default underline.").setFontSize(50)
                     .setStrokeWidth(1).setFontColor(ColorConstants.DARK_GRAY).setStrokeColor(strokeColor)
                     .setUnderline(underline2)
-                    .setUnderline();
+                    .setUnderline()
+                    .setBorder(new SolidBorder(ColorConstants.RED, 1));
 
             Underline underline3 = new Underline(null, 0, 0.1f, 0, 0.9f, PdfCanvasConstants.LineCapStyle.BUTT);
             Paragraph p3 = new Paragraph("Text with null font color and default overline.")
                     .setFontSize(50).setFontColor((TransparentColor) null)
-                    .setUnderline(underline3);
+                    .setUnderline(underline3)
+                    .setBorder(new SolidBorder(ColorConstants.RED, 1));
 
             // This line should be around the middle of the text compared to horizontal text.
             Underline underline4 = new Underline(null, 0, 0.1f, 15, 0f, PdfCanvasConstants.LineCapStyle.BUTT);
             Paragraph p4 = new Paragraph("Text with custom yPosition (15).").setFontSize(50)
-                    .setUnderline(underline4);
+                    .setUnderline(underline4)
+                    .setBorder(new SolidBorder(ColorConstants.RED, 1));
+
 
             document.add(p).add(p2).add(p3).add(p4);
         }
@@ -531,6 +537,7 @@ public class VerticalTextTest extends ExtendedITextTest {
             document.setProperty(Property.TEXT_ORIENTATION, VerticalTextOrientation.UPRIGHT);
 
             Paragraph p = new Paragraph("I'm underlined").setUnderline();
+
             document.add(p);
 
             p = new Paragraph("I'm strikethrough").setLineThrough();
@@ -850,6 +857,7 @@ public class VerticalTextTest extends ExtendedITextTest {
     }
 
     @Test
+    //TODO Background last item too narrow
     public void verticalTextWithWordSpaceTest() throws IOException, InterruptedException {
         String fileName = "verticalTextWithWordSpaceTest";
         String outFileName = DESTINATION_FOLDER + fileName + ".pdf";
@@ -886,6 +894,7 @@ public class VerticalTextTest extends ExtendedITextTest {
     }
 
     @Test
+    //TODO Background last item too narrow
     public void verticalTextWithCharacterSpaceTest() throws IOException, InterruptedException {
         String fileName = "verticalTextWithCharacterSpaceTest";
         String outFileName = DESTINATION_FOLDER + fileName + ".pdf";

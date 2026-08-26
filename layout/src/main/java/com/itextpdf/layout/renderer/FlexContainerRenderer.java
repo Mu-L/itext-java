@@ -407,8 +407,13 @@ public class FlexContainerRenderer extends DivRenderer {
         final Rectangle oldBBox = occupiedArea.getBBox().clone();
         final Rectangle recalculatedRectangle = Rectangle.getCommonRectangle(occupiedArea.getBBox(),
                 resultBBox);
-        occupiedArea.getBBox().setY(recalculatedRectangle.getY());
-        occupiedArea.getBBox().setHeight(recalculatedRectangle.getHeight());
+        if (isVerticalWriting()) {
+            occupiedArea.setBBox(Rectangle.getCommonRectangle(occupiedArea.getBBox(), resultBBox));
+        } else {
+            occupiedArea.getBBox().setY(recalculatedRectangle.getY());
+            occupiedArea.getBBox().setHeight(recalculatedRectangle.getHeight());
+        }
+
         if (oldBBox.getTop() < occupiedArea.getBBox().getTop()) {
             occupiedArea.getBBox().decreaseHeight(occupiedArea.getBBox().getTop() - oldBBox.getTop());
         }

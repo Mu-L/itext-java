@@ -167,7 +167,9 @@ public abstract class BlockRenderer extends AbstractRenderer {
             areas = initElementAreas(new LayoutArea(pageNumber, parentBBox));
         }
 
-        occupiedArea = new LayoutArea(pageNumber, new Rectangle(parentBBox.getX(), parentBBox.getY() + parentBBox.getHeight(), parentBBox.getWidth(), 0));
+        occupiedArea = new LayoutArea(pageNumber,
+                new Rectangle(parentBBox.getX(), parentBBox.getY() + parentBBox.getHeight(),
+                        isVerticalWriting() ? 0 : parentBBox.getWidth(), 0));
         shrinkOccupiedAreaForAbsolutePosition();
 
         TargetCounterHandler.addPageByID(this);

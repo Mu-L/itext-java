@@ -185,7 +185,10 @@ public class ParagraphRenderer extends BlockRenderer {
             areas = initElementAreas(new LayoutArea(pageNumber, parentBBox));
         }
 
-        occupiedArea = new LayoutArea(pageNumber, new Rectangle(parentBBox.getX(), parentBBox.getY() + parentBBox.getHeight(), parentBBox.getWidth(), 0));
+        occupiedArea = new LayoutArea(pageNumber,
+                new Rectangle(parentBBox.getX(), parentBBox.getY() + parentBBox.getHeight(),
+                        isVerticalWriting()? 0 : parentBBox.getWidth(),0));
+
         shrinkOccupiedAreaForAbsolutePosition();
 
         TargetCounterHandler.addPageByID(this);
@@ -214,6 +217,7 @@ public class ParagraphRenderer extends BlockRenderer {
             marginsCollapseHandler.startChildMarginsHandling(null, layoutBox);
         }
         boolean includeFloatsInOccupiedArea = BlockFormattingContextUtil.isRendererCreateBfc(this);
+        Rectangle originalLayoutBox = layoutBox.clone();
 
         while (currentRenderer != null) {
             currentRenderer.setProperty(Property.TAB_DEFAULT, this.getPropertyAsFloat(Property.TAB_DEFAULT));
@@ -475,9 +479,6 @@ public class ParagraphRenderer extends BlockRenderer {
             occupiedArea.getBBox().moveDown(moveDown);
             occupiedArea.getBBox().setHeight(occupiedArea.getBBox().getHeight() + moveDown);
         }
-        if (isVerticalWriting) {
-            occupiedArea.getBBox().setWidth(occupiedArea.getBBox().getWidth() - layoutBox.getWidth());
-        }
 
         if (marginsCollapsingEnabled && !childRenderers.isEmpty() && notAllKidsAreFloats) {
             marginsCollapseHandler.endChildMarginsHandling(layoutBox);
@@ -485,7 +486,7 @@ public class ParagraphRenderer extends BlockRenderer {
 
         if (includeFloatsInOccupiedArea) {
             FloatingHelper.includeChildFloatsInOccupiedArea(floatRendererAreas, this, nonChildFloatingRendererAreas);
-            fixOccupiedAreaIfOverflowedX(overflowX, layoutBox);
+            fixOccupiedAreaIfOverflowedX(overflowX, originalLayoutBox);
         }
 
         if (wasHeightClipped) {
