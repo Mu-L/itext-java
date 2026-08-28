@@ -56,6 +56,8 @@ import com.itextpdf.layout.properties.BackgroundRepeat;
 import com.itextpdf.layout.properties.BackgroundRepeat.BackgroundRepeatValue;
 import com.itextpdf.layout.properties.Property;
 import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.layout.properties.VerticalTextOrientation;
+import com.itextpdf.layout.properties.WritingMode;
 import com.itextpdf.test.ExtendedITextTest;
 import com.itextpdf.test.LogLevelConstants;
 import com.itextpdf.test.annotations.LogMessage;
@@ -718,6 +720,32 @@ public class AbstractRendererUnitTest extends ExtendedITextTest {
 
             Assertions.assertDoesNotThrow(() -> renderer.linkRenderToDocument(divRenderer, doc.getPdfDocument()));
         }
+    }
+
+    @Test
+    public void isVerticalWritingTrueForVerticalModeUprightOrientationTest() {
+        AbstractRenderer renderer = new DivRenderer(new Div());
+        renderer.setProperty(Property.WRITING_MODE, WritingMode.VERTICAL_LR);
+        renderer.setProperty(Property.TEXT_ORIENTATION, VerticalTextOrientation.UPRIGHT);
+
+        Assertions.assertTrue(renderer.isVerticalWriting());
+    }
+
+    @Test
+    public void isVerticalWritingFalseForVerticalModeWithoutTextOrientationTest() {
+        AbstractRenderer renderer = new DivRenderer(new Div());
+        renderer.setProperty(Property.WRITING_MODE, WritingMode.VERTICAL_LR);
+
+        Assertions.assertFalse(renderer.isVerticalWriting());
+    }
+
+    @Test
+    public void isVerticalWritingFalseForHorizontalModeEvenUprightOrientationTest() {
+        AbstractRenderer renderer = new DivRenderer(new Div());
+        renderer.setProperty(Property.WRITING_MODE, WritingMode.HORIZONTAL_TB);
+        renderer.setProperty(Property.TEXT_ORIENTATION, VerticalTextOrientation.UPRIGHT);
+
+        Assertions.assertFalse(renderer.isVerticalWriting());
     }
 
     @Test

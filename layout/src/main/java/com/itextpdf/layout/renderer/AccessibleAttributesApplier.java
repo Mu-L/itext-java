@@ -75,6 +75,7 @@ public class AccessibleAttributesApplier {
         attributes.put(PdfName.O, PdfName.Layout);
 
         // TODO DEVSIX-7016 WritingMode attribute applying when needed
+        applyGlyphOrientationVerticalLayoutAttribute(renderer, attributes, tagType);
 
         applyCommonLayoutAttributes(renderer, attributes);
         if (tagType == AccessibleTypes.BlockLevel) {
@@ -295,6 +296,13 @@ public class AccessibleAttributesApplier {
 
                 attributes.put(PdfName.TextDecorationThickness, new PdfNumber(underline.getThickness(fontSize.getValue())));
             }
+        }
+    }
+
+    private static void applyGlyphOrientationVerticalLayoutAttribute(AbstractRenderer renderer, PdfDictionary attributes, int tagType) {
+        if ((tagType == AccessibleTypes.BlockLevel || tagType == AccessibleTypes.InlineLevel)
+                && renderer.isVerticalWriting()) {
+            attributes.put(PdfName.GlyphOrientationVertical, new PdfNumber(0));
         }
     }
 
