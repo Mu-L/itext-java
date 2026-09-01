@@ -187,7 +187,7 @@ public class ParagraphRenderer extends BlockRenderer {
 
         occupiedArea = new LayoutArea(pageNumber,
                 new Rectangle(parentBBox.getX(), parentBBox.getY() + parentBBox.getHeight(),
-                        isVerticalWriting()? 0 : parentBBox.getWidth(),0));
+                        isVerticalWriting ? 0 : parentBBox.getWidth(), 0));
 
         shrinkOccupiedAreaForAbsolutePosition();
 
@@ -406,8 +406,11 @@ public class ParagraphRenderer extends BlockRenderer {
                             return new MinMaxWidthLayoutResult(LayoutResult.PARTIAL, editedArea, split[0], split[1]).setMinMaxWidth(minMaxWidth);
                         } else {
                             if (Boolean.TRUE.equals(getPropertyAsBoolean(Property.FORCED_PLACEMENT))) {
-                                occupiedArea.setBBox(Rectangle.getCommonRectangle(occupiedArea.getBBox(), currentRenderer.getOccupiedArea().getBBox()));
-                                fixOccupiedAreaIfOverflowedX(overflowX, layoutBox);
+                                occupiedArea.setBBox(Rectangle.getCommonRectangle(occupiedArea.getBBox(),
+                                        currentRenderer.getOccupiedArea().getBBox()));
+                                if (!isVerticalWriting || blockWidth != null) {
+                                    fixOccupiedAreaIfOverflowedX(isVerticalWriting, overflowX, layoutBox);
+                                }
                                 parent.setProperty(Property.FULL, true);
                                 lines.add(currentRenderer);
                                 // Force placement of children we have and do not force placement of the others
@@ -440,10 +443,10 @@ public class ParagraphRenderer extends BlockRenderer {
                     }
                 }
                 if (lineHasContent) {
-                    occupiedArea.setBBox(Rectangle.getCommonRectangle(occupiedArea.getBBox(), processedRenderer.getOccupiedArea().getBBox()));
-                    // TODO DEVSIX-10163 Support overflow and wrapping properties for vertical text
-                    if (!isVerticalWriting) {
-                        fixOccupiedAreaIfOverflowedX(overflowX, layoutBox);
+                    occupiedArea.setBBox(Rectangle.getCommonRectangle(occupiedArea.getBBox(),
+                            processedRenderer.getOccupiedArea().getBBox()));
+                    if (!isVerticalWriting || blockWidth != null) {
+                        fixOccupiedAreaIfOverflowedX(isVerticalWriting, overflowX, layoutBox);
                     }
                 }
                 firstLineInBox = false;
@@ -491,6 +494,20 @@ public class ParagraphRenderer extends BlockRenderer {
 
         if (wasHeightClipped) {
             fixOccupiedAreaIfOverflowedY(overflowY, layoutBox);
+        }
+        // Adjust occupied area width for vertical text after lines layout.
+        if (isVerticalWriting && blockWidth != null && !isOverflowFit(overflowX)) {
+            // Increase occupied area in case specified paragraph width is more than actual lines width.
+            if (layoutBox.getWidth() > 0
+                    && occupiedArea.getBBox().getRight() < layoutBox.getRight()) {
+                float difference = layoutBox.getRight() - occupiedArea.getBBox().getRight();
+                occupiedArea.getBBox().increaseWidth(difference);
+            }
+            // Decrease occupied area in case specified paragraph width is less than actual lines width.
+            if (layoutBox.getWidth() < 0 && occupiedArea.getBBox().getRight() > layoutBox.getRight()) {
+                float difference = occupiedArea.getBBox().getRight() - layoutBox.getRight();
+                occupiedArea.getBBox().decreaseWidth(difference);
+            }
         }
 
         if (marginsCollapsingEnabled) {
@@ -776,6 +793,18 @@ public class ParagraphRenderer extends BlockRenderer {
         float firstLineIndent = (float) overflowRenderer.getPropertyAsFloat(Property.FIRST_LINE_INDENT);
         if (firstLineIndent != 0) {
             overflowRenderer.setProperty(Property.FIRST_LINE_INDENT, 0f);
+        }
+    }
+
+    private void fixOccupiedAreaIfOverflowedX(boolean isVerticalWriting, OverflowPropertyValue overflowX,
+                                              Rectangle layoutBox) {
+        if (isVerticalWriting && !isOverflowFit(overflowX)) {
+            if (layoutBox.getWidth() < 0 && occupiedArea.getBBox().getRight() > layoutBox.getRight()) {
+                float difference = occupiedArea.getBBox().getRight() - layoutBox.getRight();
+                occupiedArea.getBBox().decreaseWidth(difference);
+            }
+        } else {
+            fixOccupiedAreaIfOverflowedX(overflowX, layoutBox);
         }
     }
 

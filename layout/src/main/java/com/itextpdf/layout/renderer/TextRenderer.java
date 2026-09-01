@@ -169,21 +169,24 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
 
         boolean noSoftWrap = Boolean.TRUE.equals(this.parent.<Boolean>getOwnProperty(Property.NO_SOFT_WRAP_INLINE));
 
-        OverflowPropertyValue overflowX = this.parent.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X);
-
-        OverflowWrapPropertyValue overflowWrap = this.<OverflowWrapPropertyValue>getProperty(Property.OVERFLOW_WRAP);
         boolean isVerticalWriting = isVerticalWriting();
+
+        OverflowPropertyValue overflow = isVerticalWriting ?
+                this.parent.<OverflowPropertyValue>getProperty(Property.OVERFLOW_Y) :
+                this.parent.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X);
+        OverflowWrapPropertyValue overflowWrap = this.<OverflowWrapPropertyValue>getProperty(Property.OVERFLOW_WRAP);
         boolean overflowWrapNotNormal = overflowWrap == OverflowWrapPropertyValue.ANYWHERE
                 || overflowWrap == OverflowWrapPropertyValue.BREAK_WORD;
         if (overflowWrapNotNormal) {
-            overflowX = OverflowPropertyValue.FIT;
+            overflow = OverflowPropertyValue.FIT;
         }
 
         List<Rectangle> floatRendererAreas = layoutContext.getFloatRendererAreas();
         FloatPropertyValue floatPropertyValue = this.<FloatPropertyValue>getProperty(Property.FLOAT);
 
         if (FloatingHelper.isRendererFloating(this, floatPropertyValue)) {
-            FloatingHelper.adjustFloatedBlockLayoutBox(this, layoutBox, null, floatRendererAreas, floatPropertyValue, overflowX);
+            FloatingHelper.adjustFloatedBlockLayoutBox(this, layoutBox, null, floatRendererAreas, floatPropertyValue,
+                    overflow);
         }
 
         float preMarginBorderPaddingWidth = layoutBox.getWidth();
@@ -283,7 +286,8 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
 
         OverflowPropertyValue overflowY = !layoutContext.isClippedHeight()
                 ? OverflowPropertyValue.FIT
-                : this.parent.<OverflowPropertyValue>getProperty(Property.OVERFLOW_Y);
+                : this.parent.<OverflowPropertyValue>getProperty(isVerticalWriting ? Property.OVERFLOW_X :
+                Property.OVERFLOW_Y);
 
         // true in situations like "\nHello World" or "Hello\nWorld"
         boolean isSplitForcedByNewLine = false;
@@ -404,8 +408,9 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
                         || ind == specialScriptFirstNotFittingIndex) {
                     firstCharacterWhichExceedsAllowedSpace = ind;
                     boolean spaceOrWhitespace = TextUtil.isSpaceOrWhitespace(text.get(ind));
-                    OverflowPropertyValue parentOverflowX = parent.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X);
-                    if (spaceOrWhitespace || overflowWrapNotNormal && !isOverflowFit(parentOverflowX)) {
+                    OverflowPropertyValue parentOverflow = parent.<OverflowPropertyValue>getProperty(
+                            isVerticalWriting ? Property.OVERFLOW_Y : Property.OVERFLOW_X);
+                    if (spaceOrWhitespace || overflowWrapNotNormal && !isOverflowFit(parentOverflow)) {
                         if (spaceOrWhitespace) {
                             wordBreakGlyphAtLineEnding = currentGlyph;
                         }
@@ -430,7 +435,7 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
                         nonBreakingHyphenRelatedChunkWidth = 0;
                     }
                 }
-                if (firstCharacterWhichExceedsAllowedSpace == -1 || !isOverflowFit(overflowX)) {
+                if (firstCharacterWhichExceedsAllowedSpace == -1 || !isOverflowFit(overflow)) {
                     nonBreakablePartWidthWhichDoesNotExceedAllowedWidth =
                             accumulateWidth(nonBreakablePartWidthWhichDoesNotExceedAllowedWidth,
                                     glyphWidth + xAdvance, isVerticalWriting);
@@ -453,7 +458,7 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
                 if (!noSoftWrap && symbolNotFitOnLine
                         && (0 == nonBreakingHyphenRelatedChunkWidth || ind + 1 == text.getEnd() ||
                         !glyphBelongsToNonBreakingHyphenRelatedChunk(text, ind + 1))) {
-                    if (isOverflowFit(overflowX)) {
+                    if (isOverflowFit(overflow)) {
                         // we have extracted all the information we wanted, and we do not want to continue.
                         // we will have to split the word anyway.
                         break;
@@ -625,7 +630,7 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
                     }
 
                     boolean specialScriptWordSplit = textContainsSpecialScriptGlyphs(true)
-                            && !isSplitForcedByNewLine && isOverflowFit(overflowX);
+                            && !isSplitForcedByNewLine && isOverflowFit(overflow);
                     if ((!anythingPlaced && !hyphenationApplied)
                             || forcePartialSplitOnFirstChar
                             || -1 != nonBreakingHyphenRelatedChunkStart
@@ -638,12 +643,12 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
                         }
                         if (!crlf) {
                             currentTextPos =
-                                    (forcePartialSplitOnFirstChar || isOverflowFit(overflowX) || specialScriptWordSplit)
+                                    (forcePartialSplitOnFirstChar || isOverflowFit(overflow) || specialScriptWordSplit)
                                             ? firstCharacterWhichExceedsAllowedSpace : (nonBreakablePartEnd + 1);
                         }
                         line.setEnd(Math.max(line.getEnd(), currentTextPos));
                         wordSplit = !forcePartialSplitOnFirstChar && (text.getEnd() != currentTextPos);
-                        if (wordSplit || !(forcePartialSplitOnFirstChar || isOverflowFit(overflowX))) {
+                        if (wordSplit || !(forcePartialSplitOnFirstChar || isOverflowFit(overflow))) {
                             currentLineAscender = Math.max(currentLineAscender, nonBreakablePartMaxAscender);
                             currentLineHeight = accumulateHeight(currentLineHeight,
                                     nonBreakablePartHeightWhichDoesNotExceedAllowedHeight, isVerticalWriting);

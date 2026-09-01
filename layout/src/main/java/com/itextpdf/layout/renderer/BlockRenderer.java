@@ -1056,7 +1056,8 @@ public abstract class BlockRenderer extends AbstractRenderer {
             return;
         }
 
-        if ((occupiedArea.getBBox().getWidth() > layoutBox.getWidth() || occupiedArea.getBBox().getLeft() < layoutBox.getLeft())) {
+        if (occupiedArea.getBBox().getWidth() > layoutBox.getWidth()
+                || occupiedArea.getBBox().getLeft() < layoutBox.getLeft()) {
             occupiedArea.getBBox().setX(layoutBox.getX()).setWidth(layoutBox.getWidth());
         }
     }

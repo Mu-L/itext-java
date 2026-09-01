@@ -576,36 +576,38 @@ public class VerticalTextTest extends ExtendedITextTest {
             PdfFont helvetica = PdfFontFactory.createFont(StandardFonts.HELVETICA);
             div.setFont(helvetica);
 
+            Text space = new Text(" ");
+
             Paragraph paragraph = new Paragraph()
                     .setHeight(500).setFontSize(50).setBackgroundColor(new DeviceRgb(187, 187, 255));
             Text text1 = new Text("WWWWWWW").setBackgroundColor(ColorConstants.YELLOW);
-            paragraph.add(text1);
+            paragraph.add(text1).add(space);
             Text text2 = new Text("aaaaaaaa").setBackgroundColor(new DeviceRgb(173, 255, 47)).setFontSize(20);
-            paragraph.add(text2);
+            paragraph.add(text2).add(space);
             Text text3 = new Text("iiiiii").setBackgroundColor(ColorConstants.YELLOW);
-            paragraph.add(text3);
+            paragraph.add(text3).add(space);
             Text text4 = new Text("jjjj").setBackgroundColor(new DeviceRgb(173, 255, 47)).setFontSize(80);
-            paragraph.add(text4);
+            paragraph.add(text4).add(space);
             Text text5 = new Text("......").setBackgroundColor(ColorConstants.YELLOW);
-            paragraph.add(text5);
+            paragraph.add(text5).add(space);
             Text text6 = new Text("Wow!").setBackgroundColor(new DeviceRgb(173, 255, 47));
-            paragraph.add(text6);
+            paragraph.add(text6).add(space);
             paragraph.add("Hello World");
 
             Paragraph paragraph2 = new Paragraph()
                     .setHeight(500).setFontSize(20).setBackgroundColor(new DeviceRgb(255, 0, 204));
             text1 = new Text("WWWWWWWwwwwWWWWW").setBackgroundColor(ColorConstants.YELLOW);
-            paragraph2.add(text1);
+            paragraph2.add(text1).add(space);
             text2 = new Text("Waaaaaaaa").setBackgroundColor(new DeviceRgb(173, 255, 47)).setFontSize(20);
-            paragraph2.add(text2);
+            paragraph2.add(text2).add(space);
             text3 = new Text("i").setBackgroundColor(ColorConstants.YELLOW).setFontSize(80);
-            paragraph2.add(text3);
+            paragraph2.add(text3).add(space);
             text4 = new Text("Wjjj").setBackgroundColor(new DeviceRgb(173, 255, 47)).setFontSize(80);
-            paragraph2.add(text4);
+            paragraph2.add(text4).add(space);
             text5 = new Text("....").setBackgroundColor(ColorConstants.YELLOW).setFontSize(80);
-            paragraph2.add(text5);
+            paragraph2.add(text5).add(space);
             text6 = new Text("Wow!").setBackgroundColor(new DeviceRgb(173, 255, 47)).setFontSize(80);
-            paragraph2.add(text6);
+            paragraph2.add(text6).add(space);
             paragraph2.add("Hello World");
 
             div.add(paragraph).add(new AreaBreak()).add(paragraph2);

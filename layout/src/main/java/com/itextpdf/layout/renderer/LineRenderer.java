@@ -88,16 +88,19 @@ public class LineRenderer extends AbstractRenderer {
 
     @Override
     public LayoutResult layout(LayoutContext layoutContext) {
-        boolean textSequenceOverflowXProcessing = false;
         int firstChildToRelayout = -1;
 
         Rectangle layoutBox = layoutContext.getArea().getBBox().clone();
         boolean wasParentsHeightClipped = layoutContext.isClippedHeight();
         List<Rectangle> floatRendererAreas = layoutContext.getFloatRendererAreas();
 
-        OverflowPropertyValue oldXOverflow = null;
         boolean isVerticalWriting = isVerticalWriting();
-        boolean wasXOverflowChanged = false;
+
+        boolean textSequenceOverflowProcessing = false;
+        OverflowPropertyValue oldOverflow = null;
+        int overflowProperty = isVerticalWriting ? Property.OVERFLOW_Y : Property.OVERFLOW_X;
+        boolean wasOverflowChanged = false;
+
         boolean floatsPlacedBeforeLine = false;
 
         if (floatRendererAreas != null) {
@@ -108,8 +111,8 @@ public class LineRenderer extends AbstractRenderer {
             FloatingHelper.adjustLineAreaAccordingToFloats(floatRendererAreas, layoutBox);
             if (layoutWidth > layoutBox.getWidth() || layoutHeight > layoutBox.getHeight()) {
                 floatsPlacedBeforeLine = true;
-                oldXOverflow = this.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X);
-                wasXOverflowChanged = true;
+                oldOverflow = this.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X);
+                wasOverflowChanged = true;
                 setProperty(Property.OVERFLOW_X, OverflowPropertyValue.FIT);
             }
         }
@@ -279,9 +282,9 @@ public class LineRenderer extends AbstractRenderer {
                 // html when floating span is split on other line;
                 // TODO DEVSIX-1730: may be process floating spans as inline blocks always?
 
-                if (!wasXOverflowChanged && childPos > 0) {
-                    oldXOverflow = this.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X);
-                    wasXOverflowChanged = true;
+                if (!wasOverflowChanged && childPos > 0) {
+                    oldOverflow = this.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X);
+                    wasOverflowChanged = true;
                     setProperty(Property.OVERFLOW_X, OverflowPropertyValue.FIT);
                 }
                 if (!lineLayoutContext.isFloatOverflowedToNextPageWithNothing() && floatsOverflowedToNextLine.isEmpty()
@@ -425,24 +428,25 @@ public class LineRenderer extends AbstractRenderer {
                         && childRenderer instanceof TextRenderer
                         && !((TextRenderer) childRenderer).textContainsSpecialScriptGlyphs(true);
 
-                if (!wasXOverflowChanged
+                if (!wasOverflowChanged
                         && (childPos > 0 || setOverflowFitCausedBySpecialScripts
                         || setOverflowFitCausedByTextRendererInHtmlMode)
-                        && !textSequenceOverflowXProcessing) {
-                    oldXOverflow = this.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X);
-                    wasXOverflowChanged = true;
-                    setProperty(Property.OVERFLOW_X, OverflowPropertyValue.FIT);
+                        && !textSequenceOverflowProcessing) {
+                    oldOverflow = this.<OverflowPropertyValue>getProperty(overflowProperty);
+                    wasOverflowChanged = true;
+                    setProperty(overflowProperty, OverflowPropertyValue.FIT);
                 }
 
-                TextSequenceWordWrapping.preprocessTextSequenceOverflowX(this, textSequenceOverflowXProcessing,
-                        childRenderer, wasXOverflowChanged, oldXOverflow);
+                TextSequenceWordWrapping.preprocessTextSequenceOverflow(this, textSequenceOverflowProcessing,
+                        childRenderer, wasOverflowChanged, oldOverflow, overflowProperty);
 
                 childResult = directChildRenderer.layout(
                         new LayoutContext(new LayoutArea(layoutContext.getArea().getPageNumber(), bbox),
                                 wasParentsHeightClipped));
 
-                shouldBreakLayouting = TextSequenceWordWrapping.postprocessTextSequenceOverflowX(this,
-                        textSequenceOverflowXProcessing, childPos, childRenderer, childResult, wasXOverflowChanged);
+                shouldBreakLayouting = TextSequenceWordWrapping.postprocessTextSequenceOverflow(this,
+                        textSequenceOverflowProcessing, childPos, childRenderer,
+                        childResult, wasOverflowChanged, overflowProperty);
 
                 TextSequenceWordWrapping.updateTextSequenceLayoutResults(
                         textRendererLayoutResults, false, childRenderer, childPos, childResult);
@@ -506,27 +510,27 @@ public class LineRenderer extends AbstractRenderer {
 
             if (shouldBreakLayoutingOnTextRenderer) {
                 boolean isWordHasBeenSplitLayoutRenderingMode = ((TextLayoutResult) childResult).isWordHasBeenSplit()
-                        && (RenderingMode.HTML_MODE != childRenderingMode || isVerticalWriting)
+                        && RenderingMode.HTML_MODE != childRenderingMode
                         && directChildRenderer instanceof TextRenderer &&
                         !((TextRenderer) directChildRenderer).textContainsSpecialScriptGlyphs(true);
                 boolean enableSpecialScriptsWrapping = childRenderer instanceof TextRenderer
-                        && !textSequenceOverflowXProcessing && !newLineOccurred
+                        && !textSequenceOverflowProcessing && !newLineOccurred
                         && ((TextRenderer) childRenderer).textContainsSpecialScriptGlyphs(true);
                 boolean enableTextSequenceWrapping =
-                        ((RenderingMode.HTML_MODE == childRenderingMode && !isVerticalWriting)
+                        (RenderingMode.HTML_MODE == childRenderingMode
                                 || (directChildRenderer instanceof FootnoteAnchorRenderer
                                 && childRenderer instanceof TextRenderer))
                                 && !newLineOccurred
-                                && !textSequenceOverflowXProcessing;
+                                && !textSequenceOverflowProcessing;
 
                 if (isWordHasBeenSplitLayoutRenderingMode) {
                     forceOverflowForTextRendererPartialResult = isForceOverflowForTextRendererPartialResult(
-                            childRenderer, wasXOverflowChanged, oldXOverflow, layoutContext, layoutBox,
-                            wasParentsHeightClipped);
+                            childRenderer, wasOverflowChanged, oldOverflow, layoutContext, layoutBox,
+                            wasParentsHeightClipped, overflowProperty);
                 } else if (enableSpecialScriptsWrapping) {
-                    boolean isOverflowFit = wasXOverflowChanged
-                            ? (oldXOverflow == OverflowPropertyValue.FIT)
-                            : isOverflowFit(this.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X));
+                    boolean isOverflowFit = wasOverflowChanged
+                            ? (oldOverflow == OverflowPropertyValue.FIT)
+                            : isOverflowFit(this.<OverflowPropertyValue>getProperty(overflowProperty));
                     LastFittingChildRendererData lastFittingChildRendererData = TextSequenceWordWrapping
                             .getIndexAndLayoutResultOfTheLastTextRendererContainingSpecialScripts(
                                     this, childPos,
@@ -534,7 +538,7 @@ public class LineRenderer extends AbstractRenderer {
                                     isOverflowFit);
 
                     if (lastFittingChildRendererData == null) {
-                        textSequenceOverflowXProcessing = true;
+                        textSequenceOverflowProcessing = true;
                         shouldBreakLayouting = false;
                         firstChildToRelayout = childPos;
                     } else {
@@ -551,16 +555,16 @@ public class LineRenderer extends AbstractRenderer {
                         maxChildWidth = textSequenceElemminMaxWidth.getMaxWidth();
                     }
                 } else if (enableTextSequenceWrapping) {
-                    boolean isOverflowFit = wasXOverflowChanged
-                            ? (oldXOverflow == OverflowPropertyValue.FIT)
-                            : isOverflowFit(this.<OverflowPropertyValue>getProperty(Property.OVERFLOW_X));
+                    boolean isOverflowFit = wasOverflowChanged
+                            ? (oldOverflow == OverflowPropertyValue.FIT)
+                            : isOverflowFit(this.<OverflowPropertyValue>getProperty(overflowProperty));
                     LastFittingChildRendererData lastFittingChildRendererData =
                             TextSequenceWordWrapping.getIndexAndLayoutResultOfTheLastTextRendererWithNoSpecialScripts(
                                     this, childPos,
                                     textRendererLayoutResults, wasParentsHeightClipped,
                                     isOverflowFit, floatsPlacedInLine || floatsPlacedBeforeLine);
                     if (lastFittingChildRendererData == null) {
-                        textSequenceOverflowXProcessing = true;
+                        textSequenceOverflowProcessing = true;
                         shouldBreakLayouting = false;
                         firstChildToRelayout = childPos;
                     } else {
@@ -643,8 +647,8 @@ public class LineRenderer extends AbstractRenderer {
                 if (!forceOverflowForTextRendererPartialResult) {
                     if (isVerticalWriting) {
                         float maxLineWidth = Math.max(occupiedArea.getBBox().getWidth(),
-                                childResult.getStatus() ==
-                                        LayoutResult.NOTHING ? 0 : childResult.getOccupiedArea().getBBox().getWidth());
+                                childResult.getStatus() == LayoutResult.NOTHING ?
+                                        0 : childResult.getOccupiedArea().getBBox().getWidth());
                         // Html/css and browsers also use line height as line width for vertical text.
                         float lineHeight = maxAscent - maxDescent;
                         occupiedArea.setBBox(new Rectangle(layoutBox.getX(),
@@ -808,13 +812,13 @@ public class LineRenderer extends AbstractRenderer {
             result.setMinMaxWidth(minMaxWidth);
         }
 
-        if (wasXOverflowChanged) {
-            setProperty(Property.OVERFLOW_X, oldXOverflow);
+        if (wasOverflowChanged) {
+            setProperty(overflowProperty, oldOverflow);
             if (null != result.getSplitRenderer()) {
-                result.getSplitRenderer().setProperty(Property.OVERFLOW_X, oldXOverflow);
+                result.getSplitRenderer().setProperty(overflowProperty, oldOverflow);
             }
             if (null != result.getOverflowRenderer()) {
-                result.getOverflowRenderer().setProperty(Property.OVERFLOW_X, oldXOverflow);
+                result.getOverflowRenderer().setProperty(overflowProperty, oldOverflow);
             }
         }
         return result;
@@ -1524,28 +1528,31 @@ public class LineRenderer extends AbstractRenderer {
      * Checks if the word that's been split when has been layouted on this line can fit the next line without splitting.
      *
      * @param childRenderer the childRenderer containing the split word
-     * @param wasXOverflowChanged true if {@link Property#OVERFLOW_X} has been changed
+     * @param wasOverflowChanged true if {@link Property#OVERFLOW_X} or {@link Property#OVERFLOW_Y} has been changed
      * during layouting of {@link LineRenderer}
-     * @param oldXOverflow the value of {@link Property#OVERFLOW_X} before it's been changed
-     * during layouting of {@link LineRenderer}
-     * or null if {@link Property#OVERFLOW_X} hasn't been changed
+     * @param oldOverflow the value of {@link Property#OVERFLOW_X} or {@link Property#OVERFLOW_Y}
+     * before it's been changed during layouting of {@link LineRenderer}
+     * or null if {@link Property#OVERFLOW_X} or {@link Property#OVERFLOW_Y} hasn't been changed
      * @param layoutContext {@link LayoutContext}
      * @param layoutBox current layoutBox
      * @param wasParentsHeightClipped true if layoutBox's height has been clipped
+     * @param overflowProperty either {@link Property#OVERFLOW_X} for horizontal text
+     * or {@link Property#OVERFLOW_Y} for vertical text
      *
      * @return true if the split word can fit the next line without splitting
      */
-    boolean isForceOverflowForTextRendererPartialResult(IRenderer childRenderer, boolean wasXOverflowChanged,
-                                                        OverflowPropertyValue oldXOverflow, LayoutContext layoutContext,
-                                                        Rectangle layoutBox, boolean wasParentsHeightClipped) {
-        if (wasXOverflowChanged) {
-            setProperty(Property.OVERFLOW_X, oldXOverflow);
+    boolean isForceOverflowForTextRendererPartialResult(IRenderer childRenderer, boolean wasOverflowChanged,
+                                                        OverflowPropertyValue oldOverflow, LayoutContext layoutContext,
+                                                        Rectangle layoutBox, boolean wasParentsHeightClipped,
+                                                        int overflowProperty) {
+        if (wasOverflowChanged) {
+            setProperty(overflowProperty, oldOverflow);
         }
         LayoutResult newLayoutResult = childRenderer.layout(
                 new LayoutContext(new LayoutArea(layoutContext.getArea().getPageNumber(), layoutBox),
                         wasParentsHeightClipped));
-        if (wasXOverflowChanged) {
-            setProperty(Property.OVERFLOW_X, OverflowPropertyValue.FIT);
+        if (wasOverflowChanged) {
+            setProperty(overflowProperty, OverflowPropertyValue.FIT);
         }
         return newLayoutResult instanceof TextLayoutResult
                 && !((TextLayoutResult) newLayoutResult).isWordHasBeenSplit();

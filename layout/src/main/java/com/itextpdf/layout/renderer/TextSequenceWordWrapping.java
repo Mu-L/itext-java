@@ -400,50 +400,53 @@ final class TextSequenceWordWrapping {
      * Performs some settings on {@link LineRenderer} and its child prior to layouting the child
      * to be overflowed beyond the available area.
      *
-     * @param lineRenderer                    line renderer containing text sequence to process
-     * @param textSequenceOverflowXProcessing true if it is {@link TextRenderer} sequence processing in overflowX mode
-     * @param childRenderer                   the {@link LineRenderer}'s child to be preprocessed
-     * @param wasXOverflowChanged             true if value of {@link Property#OVERFLOW_X} has been changed during
-     *                                        layouting
-     * @param oldXOverflow                    the value of {@link Property#OVERFLOW_X} before it's been changed
-     *                                        during layouting of {@link LineRenderer}
-     *                                        or null if {@link Property#OVERFLOW_X} hasn't been changed
+     * @param lineRenderer line renderer containing text sequence to process
+     * @param textSequenceOverflowProcessing true if it is {@link TextRenderer} sequence processing in overflowX mode
+     * @param childRenderer the {@link LineRenderer}'s child to be preprocessed
+     * @param wasOverflowChanged true if value of {@link Property#OVERFLOW_X} has been changed during
+     * layouting
+     * @param oldOverflow the value of {@link Property#OVERFLOW_X} before it's been changed
+     * during layouting of {@link LineRenderer}
+     * or null if {@link Property#OVERFLOW_X} hasn't been changed
+     * @param overflowProperty either {@link Property#OVERFLOW_X} for horizontal text
+     * or {@link Property#OVERFLOW_Y} for vertical text
      */
-    public static void preprocessTextSequenceOverflowX(LineRenderer lineRenderer,
-            boolean textSequenceOverflowXProcessing, IRenderer childRenderer,
-            boolean wasXOverflowChanged, OverflowPropertyValue oldXOverflow) {
+    public static void preprocessTextSequenceOverflow(LineRenderer lineRenderer,
+            boolean textSequenceOverflowProcessing, IRenderer childRenderer,
+            boolean wasOverflowChanged, OverflowPropertyValue oldOverflow, int overflowProperty) {
         boolean specialScripts = childRenderer instanceof TextRenderer && ((TextRenderer) childRenderer)
                 .textContainsSpecialScriptGlyphs(true);
-        if (textSequenceOverflowXProcessing && specialScripts) {
+        if (textSequenceOverflowProcessing && specialScripts) {
             int firstPossibleBreakWithinTheRenderer =
                     ((TextRenderer) childRenderer).getSpecialScriptsWordBreakPoints().get(0);
             if (firstPossibleBreakWithinTheRenderer != -1) {
                 ((TextRenderer) childRenderer)
                         .setSpecialScriptFirstNotFittingIndex(firstPossibleBreakWithinTheRenderer);
             }
-            if (wasXOverflowChanged) {
-                lineRenderer.setProperty(Property.OVERFLOW_X, oldXOverflow);
+            if (wasOverflowChanged) {
+                lineRenderer.setProperty(overflowProperty, oldOverflow);
             }
         }
 
-        if (textSequenceOverflowXProcessing && !specialScripts && wasXOverflowChanged) {
-            lineRenderer.setProperty(Property.OVERFLOW_X, oldXOverflow);
+        if (textSequenceOverflowProcessing && !specialScripts && wasOverflowChanged) {
+            lineRenderer.setProperty(overflowProperty, oldOverflow);
         }
     }
 
     /**
      * Checks if the layouting should be stopped on current child and resets configurations set on
-     * {@link #preprocessTextSequenceOverflowX(LineRenderer, boolean, IRenderer, boolean, OverflowPropertyValue)}.
+     * {@link #preprocessTextSequenceOverflow}.
      *
-     * @param lineRenderer                    line renderer containing text sequence to process
-     * @param textSequenceOverflowXProcessing true if it is {@link TextRenderer} sequence processing in overflowX mode
-     * @param childRenderer                   the {@link LineRenderer}'s child to be preprocessed
-     * @param wasXOverflowChanged             true if value of {@link Property#OVERFLOW_X} has been changed during
-     *                                        layouting
+     * @param lineRenderer line renderer containing text sequence to process
+     * @param textSequenceOverflowProcessing true if it is {@link TextRenderer} sequence processing in overflowX mode
+     * @param childRenderer the {@link LineRenderer}'s child to be preprocessed
+     * @param wasOverflowChanged true if value of {@link Property#OVERFLOW_X} has been changed during layouting
+     * @param overflowProperty either {@link Property#OVERFLOW_X} for horizontal text
+     * or {@link Property#OVERFLOW_Y} for vertical text
      */
-    public static boolean postprocessTextSequenceOverflowX(LineRenderer lineRenderer,
-            boolean textSequenceOverflowXProcessing, int childPos,
-            IRenderer childRenderer, LayoutResult childResult, boolean wasXOverflowChanged) {
+    public static boolean postprocessTextSequenceOverflow(LineRenderer lineRenderer,
+            boolean textSequenceOverflowProcessing, int childPos,
+            IRenderer childRenderer, LayoutResult childResult, boolean wasOverflowChanged, int overflowProperty) {
         boolean specialScripts = childRenderer instanceof TextRenderer && ((TextRenderer) childRenderer)
                 .textContainsSpecialScriptGlyphs(true);
         boolean shouldBreakLayouting = false;
@@ -451,24 +454,24 @@ final class TextSequenceWordWrapping {
                 || LineRenderer.isChildFloating(getRenderer(lineRenderer, childPos + 1))
                 || !(getRenderer(lineRenderer, childPos + 1) instanceof TextRenderer);
 
-        if (textSequenceOverflowXProcessing && specialScripts) {
+        if (textSequenceOverflowProcessing && specialScripts) {
             if (((TextRenderer) childRenderer).getSpecialScriptFirstNotFittingIndex() > 0
                     || lastElemOfTextSequence) {
                 shouldBreakLayouting = true;
             }
             ((TextRenderer) childRenderer).setSpecialScriptFirstNotFittingIndex(-1);
-            if (wasXOverflowChanged) {
-                lineRenderer.setProperty(Property.OVERFLOW_X, OverflowPropertyValue.FIT);
+            if (wasOverflowChanged) {
+                lineRenderer.setProperty(overflowProperty, OverflowPropertyValue.FIT);
             }
         }
 
-        if (textSequenceOverflowXProcessing && !specialScripts) {
+        if (textSequenceOverflowProcessing && !specialScripts) {
             if ((childResult instanceof TextLayoutResult && ((TextLayoutResult) childResult).isContainsPossibleBreak())
                     || lastElemOfTextSequence) {
                 shouldBreakLayouting = true;
             }
-            if (wasXOverflowChanged) {
-                lineRenderer.setProperty(Property.OVERFLOW_X, OverflowPropertyValue.FIT);
+            if (wasOverflowChanged) {
+                lineRenderer.setProperty(overflowProperty, OverflowPropertyValue.FIT);
             }
         }
 
