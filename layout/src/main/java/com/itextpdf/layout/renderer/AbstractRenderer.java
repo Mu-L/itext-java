@@ -162,6 +162,8 @@ public abstract class AbstractRenderer implements IRenderer {
     protected Map<Integer, Object> properties = new HashMap<>();
     protected boolean isLastRendererForModelElement = true;
 
+    private boolean relativePositioningTranslationApplied = false;
+
     /**
      * Creates a renderer.
      */
@@ -2028,6 +2030,10 @@ public abstract class AbstractRenderer implements IRenderer {
     }
 
     protected void applyRelativePositioningTranslation(boolean reverse) {
+        if (reverse != relativePositioningTranslationApplied) {
+            return;
+        }
+
         float top = (float) this.getPropertyAsFloat(Property.TOP, 0f);
         float bottom = (float) this.getPropertyAsFloat(Property.BOTTOM, 0f);
         float left = (float) this.getPropertyAsFloat(Property.LEFT, 0f);
@@ -2038,8 +2044,11 @@ public abstract class AbstractRenderer implements IRenderer {
         float dxRight = left != 0 ? left * reverseMultiplier : -right * reverseMultiplier;
         float dyUp = top != 0 ? -top * reverseMultiplier : bottom * reverseMultiplier;
 
-        if (dxRight != 0 || dyUp != 0)
+        if (dxRight != 0 || dyUp != 0) {
             move(dxRight, dyUp);
+        }
+
+        relativePositioningTranslationApplied = !reverse;
     }
 
     protected void applyDestination(PdfDocument document) {

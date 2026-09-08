@@ -374,8 +374,13 @@ public class ImageRenderer extends AbstractRenderer implements ILeafElementRende
         if (isRelativePosition) {
             applyRelativePositioningTranslation(false);
         }
+
         applyMargins(initialOccupiedAreaBBox, true);
         applyBorderBox(initialOccupiedAreaBBox, true);
+
+        if (isRelativePosition) {
+            applyRelativePositioningTranslation(true);
+        }
         return initialOccupiedAreaBBox;
     }
 

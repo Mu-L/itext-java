@@ -739,7 +739,6 @@ public class ImageTest extends ExtendedITextTest {
         Assertions.assertNull(new CompareTool().compareByContent(outFileName, cmpFileName, destinationFolder, "diff"));
     }
 
-    //TODO(DEVSIX-1022)
     @Test
     public void imageRelativePositionTest() throws IOException, InterruptedException {
         String outFileName = destinationFolder + "imageRelativePositionTest.pdf";

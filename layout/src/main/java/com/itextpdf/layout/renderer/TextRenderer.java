@@ -147,6 +147,11 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
         this.strToBeConverted = text;
     }
 
+    /**
+     * Creates a new {@link TextRenderer} as a copy of the given one.
+     *
+     * @param other the {@link TextRenderer} to copy
+     */
     protected TextRenderer(TextRenderer other) {
         super(other);
         this.text = other.text;
@@ -1009,7 +1014,7 @@ public class TextRenderer extends AbstractRenderer implements ILeafElementRender
         }
 
         if (isRelativePosition) {
-            applyRelativePositioningTranslation(false);
+            applyRelativePositioningTranslation(true);
         }
 
         if (isTagged && !isArtifact) {
