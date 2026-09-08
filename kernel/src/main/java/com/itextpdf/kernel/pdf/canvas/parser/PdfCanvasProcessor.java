@@ -84,6 +84,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -122,6 +123,11 @@ public class PdfCanvasProcessor {
     protected int clippingRule;
 
     /**
+     * Tracks Form XObjects currently being processed to detect circular references
+     */
+    final Set<PdfIndirectReference> processingXObjectReferences = new HashSet<>();
+
+    /**
      * A map with all supported operators (PDF syntax).
      */
     private Map<String, IContentOperator> operators;
@@ -129,7 +135,7 @@ public class PdfCanvasProcessor {
     /**
      * Resources for the content stream.
      * Current resources are always at the top of the stack.
-     * Stack is needed in case if some "inner" content stream with it's own resources
+     * Stack is needed in case if some "inner" content stream with its own resources
      * is encountered (like Form XObject).
      */
     private List<PdfResources> resourcesStack;
@@ -249,6 +255,7 @@ public class PdfCanvasProcessor {
         resourcesStack = new ArrayList<>();
         isClip = false;
         currentPath = new Path();
+        processingXObjectReferences.clear();
     }
 
     /**
@@ -1472,38 +1479,56 @@ public class PdfCanvasProcessor {
 
         @Override
         public void handleXObject(PdfCanvasProcessor processor, Stack<CanvasTag> canvasTagHierarchy, PdfStream xObjectStream, PdfName xObjectName) {
-
-            PdfDictionary resourcesDic = xObjectStream.getAsDictionary(PdfName.Resources);
-            PdfResources resources;
-            if (resourcesDic == null) {
-                resources = processor.getResources();
-            } else {
-                resources = new PdfResources(resourcesDic);
+            PdfIndirectReference xObjectReference = xObjectStream.getIndirectReference();
+            if (xObjectReference != null) {
+                if (processor.processingXObjectReferences.contains(xObjectReference)) {
+                    throw new PdfException(MessageFormatUtil.format(
+                            KernelExceptionMessageConstant.FORM_XOBJECT_HAS_CIRCULAR_REFERENCES,
+                            xObjectReference.getObjNumber(),
+                            xObjectReference.getGenNumber()));
+                } else {
+                    processor.processingXObjectReferences.add(xObjectReference);
+                }
             }
 
-            // we read the content bytes up here so if it fails we don't leave the graphics state stack corrupted
-            // this is probably not necessary (if we fail on this, probably the entire content stream processing
-            // operation should be rejected
-            byte[] contentBytes;
-            contentBytes = xObjectStream.getBytes();
-            final PdfArray matrix = xObjectStream.getAsArray(PdfName.Matrix);
+            try {
+                PdfDictionary resourcesDic = xObjectStream.getAsDictionary(PdfName.Resources);
+                PdfResources resources;
+                if (resourcesDic == null) {
+                    resources = processor.getResources();
+                } else {
+                    resources = new PdfResources(resourcesDic);
+                }
 
-            new PushGraphicsStateOperator().invoke(processor, null, null);
+                // we read the content bytes up here so if it fails we don't leave the graphics state stack corrupted
+                // this is probably not necessary (if we fail on this, probably the entire content stream processing
+                // operation should be rejected
+                byte[] contentBytes;
+                contentBytes = xObjectStream.getBytes();
+                final PdfArray matrix = xObjectStream.getAsArray(PdfName.Matrix);
 
-            if (matrix != null) {
-                float a = matrix.getAsNumber(0).floatValue();
-                float b = matrix.getAsNumber(1).floatValue();
-                float c = matrix.getAsNumber(2).floatValue();
-                float d = matrix.getAsNumber(3).floatValue();
-                float e = matrix.getAsNumber(4).floatValue();
-                float f = matrix.getAsNumber(5).floatValue();
-                Matrix formMatrix = new Matrix(a, b, c, d, e, f);
-                processor.getGraphicsState().updateCtm(formMatrix);
+                new PushGraphicsStateOperator().invoke(processor, null, null);
+                try {
+                    if (matrix != null) {
+                        float a = matrix.getAsNumber(0).floatValue();
+                        float b = matrix.getAsNumber(1).floatValue();
+                        float c = matrix.getAsNumber(2).floatValue();
+                        float d = matrix.getAsNumber(3).floatValue();
+                        float e = matrix.getAsNumber(4).floatValue();
+                        float f = matrix.getAsNumber(5).floatValue();
+                        Matrix formMatrix = new Matrix(a, b, c, d, e, f);
+                        processor.getGraphicsState().updateCtm(formMatrix);
+                    }
+
+                    processor.processContent(contentBytes, resources);
+                } finally {
+                    new PopGraphicsStateOperator().invoke(processor, null, null);
+                }
+            } finally {
+                if (xObjectReference != null) {
+                    processor.processingXObjectReferences.remove(xObjectReference);
+                }
             }
-
-            processor.processContent(contentBytes, resources);
-
-            new PopGraphicsStateOperator().invoke(processor, null, null);
         }
     }
 
