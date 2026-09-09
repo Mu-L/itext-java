@@ -19,9 +19,6 @@
                 <file path="com/itextpdf/commons/utils/MessageFormatUtil.java"/>
             </fileset>
 
-            <fileset reason="Platform dependent configuration">
-                <file path="com/itextpdf/pdftest/Availability.java"/>
-            </fileset>
             <fileset reason="Underlying implementation classes not autoportable (e.g. java.nio.charset.Charset,
         java.nio.charset.CharsetEncoder, java.nio.ByteBuffer">
                 <file path="com/itextpdf/commons/utils/EncodingUtil.java"/>
@@ -148,7 +145,6 @@
             <file path="com/itextpdf/io/util/ResourceUtil.java"/>
             <file path="com/itextpdf/io/util/UrlUtilTest.java"/>
             <file path="com/itextpdf/io/util/GenericArray.java"/>
-            <file path="com/itextpdf/io/util/ExceptionUtil.java"/>
             <file path="com/itextpdf/io/exceptions/ExceptionUtil.java"/>
             <file path="com/itextpdf/io/util/TextUtil.java"/>
             <file path="com/itextpdf/io/util/FilterUtil.java"/>
@@ -192,11 +188,8 @@
                 <file path="com/itextpdf/bouncycastle/asn1/ASN1TaggedObjectBC.java"/>
                 <file path="com/itextpdf/bouncycastle/asn1/ocsp/BasicOCSPResponseBC.java"/>
                 <file path="com/itextpdf/bouncycastle/asn1/ocsp/OCSPResponseBC.java"/>
-                <file path="com/itextpdf/bouncycastle/asn1/ocsp/ResponderIdBC.java"/>
                 <file path="com/itextpdf/bouncycastle/asn1/pcks/PrivateKeyInfoBC.java"/>
-                <file path="com/itextpdf/bouncycastle/asn1/pkcs/PrivateKeyInfoBC.java"/>
                 <file path="com/itextpdf/bouncycastle/asn1/pcks/RSASSAPSSParamsBC.java"/>
-                <file path="com/itextpdf/bouncycastle/asn1/pkcs/RSASSAPSSParamsBC.java"/>
                 <file path="com/itextpdf/bouncycastle/asn1/util/ASN1DumpBC.java"/>
                 <file path="com/itextpdf/bouncycastle/asn1/x500/X500NameBC.java"/>
                 <file path="com/itextpdf/bouncycastle/asn1/x509/ExtensionBC.java"/>
@@ -263,9 +256,7 @@
                 <file path="com/itextpdf/bouncycastlefips/asn1/ASN1OutputStreamBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/asn1/ocsp/BasicOCSPResponseBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/asn1/ocsp/OCSPResponseBCFips.java"/>
-                <file path="com/itextpdf/bouncycastlefips/asn1/ocsp/ResponderIdBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/asn1/pcks/PrivateKeyInfoBCFips.java"/>
-                <file path="com/itextpdf/bouncycastlefips/asn1/pkcs/PrivateKeyInfoBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/asn1/x500/X500NameBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/asn1/x509/ExtensionBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/asn1/x509/ExtensionsBCFips.java"/>
@@ -320,7 +311,6 @@
                 <file path="com/itextpdf/bouncycastlefips/pkcs/PKCS8EncryptedPrivateKeyInfoBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/pkcs/PKCSExceptionBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/asn1/pcks/RSASSAPSSParamsBCFips.java"/>
-                <file path="com/itextpdf/bouncycastlefips/asn1/pkcs/RSASSAPSSParamsBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/tsp/TimeStampResponseGeneratorBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/tsp/TimeStampRequestGeneratorBCFips.java"/>
                 <file path="com/itextpdf/bouncycastlefips/tsp/TimeStampResponseBCFips.java"/>
@@ -646,9 +636,6 @@
             <fileset reason="The ignore is added here due to java.awt is not expected to be ported">
                 <file path="com/itextpdf/kernel/pdf/xobject/ImageFromLanguageStandardLibraryTest.java"/>
             </fileset>
-            <fileset reason="There's no serialization functionality in .Net, so there's no sense in this test class in .Net version">
-                <file path="com/itextpdf/kernel/pdf/DocumentSerializationTest.java"/>
-            </fileset>
             <fileset>
                 <file path="com/itextpdf/test/runtime/VeraPdfValidatorAppTest.java"/>
                 <file path="com/itextpdf/test/utils/UriUtilTest.java"/>
@@ -674,9 +661,6 @@
         </java>
     </ignored>
      <resource>
-        <fileset reason="There's no serialization functionality in .Net, so there's no sense in this test class in .Net version">
-            <file path="com/itextpdf/kernel/pdf/DocumentSerializationTest/cmp_Listing_06_19_FillDataSheet.pdf" />
-        </fileset>
         <file path="com/itextpdf/kernel/pdf/xobject/GetImageBytesTest/ASCII85_RunLengthDecode.png" />
         <file path="com/itextpdf/kernel/pdf/xobject/GetImageBytesTest/ccittfaxdecode.png" />
         <file path="com/itextpdf/kernel/pdf/xobject/GetImageBytesTest/flatedecode_runlengthdecode.png" />
@@ -690,18 +674,14 @@
             <file path="com/itextpdf/signatures/sign/LtvSigTest/cmp_secondLtvOriginalHasNoVriTs01.pdf"/>
             <file path="com/itextpdf/signatures/sign/LtvSigTest/cmp_ltvEnabledSingleSignatureNoOcspDataTest.pdf"/>
             <file path="com/itextpdf/signatures/sign/LtvSigTest/cmp_ltvEnabledSingleSignatureNoCrlDataTest.pdf"/>
-            <file path="com/itextpdf/signatures/sign/LtvSigTest/cmp_ltvEnabledSingleSignatureTest01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSignatureLevelTest/cmp_padesSignatureLevelTTest01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSignatureLevelTest/cmp_padesSignatureLevelLTATest01.pdf"/>
-            <file path="com/itextpdf/signatures/sign/LtvSigTest/cmp_ltvEnabledTest01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSigTest/cmp_padesEccSigTest01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSigTest/cmp_padesEpesProfileTest01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSigTest/cmp_padesRsaSigTest01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSigTest/cmp_padesRsaSigTestWithChain01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSigTest/cmp_signaturePolicyInfoUnavailableUrl_signed.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSigTest/helloWorldDoc.pdf"/>
-            <file path="com/itextpdf/signatures/sign/PadesSigTest/templateForSignDeferred.pdf"/>
-            <file path="com/itextpdf/signatures/sign/PadesSignatureLevelTest/cmp_padesSignatureLevelBTest01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSignatureLevelTest/cmp_padesSignatureLevelLTTest01.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSignatureLevelTest/helloWorldDoc.pdf"/>
             <file path="com/itextpdf/signatures/sign/PadesSignatureLevelTest/signedPAdES-LT.pdf"/>
